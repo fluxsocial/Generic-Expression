@@ -1,0 +1,12 @@
+[package]
+name = "schema_validation"
+version = "0.1.0"
+authors = ["kaichao <kaichaosuna@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "schema_validation"
+
+[dependencies]
+hdk = "0.0.103"

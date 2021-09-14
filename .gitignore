@@ -1,0 +1,13 @@
+dist/
+hc-dna/zomes/tests/node_modules
+target/
+.hc
+.cargo
+*.dna
+*.js
+*.js.map
+node_modules
+!dna.js
+!*.icons.js
+!*.config.js
+build
