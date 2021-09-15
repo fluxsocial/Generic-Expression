@@ -1,0 +1,8 @@
+---
+manifest_version: 1
+name: schema-validation
+uuid: 00000000-0000-0000-0000-000000000000
+properties: ~
+zomes: 
+  - name: schema_validation
+    bundled: ../target/wasm32-unknown-unknown/release/schema_validation.wasm
