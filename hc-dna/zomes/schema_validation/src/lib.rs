@@ -55,6 +55,30 @@ pub fn create_expression(input: CreateExpressionInput) -> ExternResult<EntryHash
     Ok(entry_hash)
 }
 
+#[derive(SerializedBytes, Serialize, Deserialize, Clone, Debug)]
+pub struct GetByAuthorInput {
+    pub author: String,
+    pub from: DateTime<Utc>,
+    pub until: DateTime<Utc>,
+}
+
+#[hdk_extern]
+pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Expression>> {
+    let links = hc_time_index::get_links_for_time_span(
+        input.author, input.from, input.until, Some(LinkTag::new("expression")), None
+    ).map_err(|e| WasmError::Host(e.to_string()))?;
+    debug!("Got links: {:#?}", links);
+    links.into_iter()
+        .map(|link| {
+            let element = get(link.target, GetOptions::default())?
+                .ok_or(WasmError::Host(String::from("Could not get entry after commit.")))?;
+            let expression = element.entry().to_app_option()?
+                .ok_or(WasmError::Host(String::from("Could not deserialize link data to expression")))?;
+            Ok(expression)
+        })
+        .collect()
+}
+
 #[derive(SerializedBytes, Serialize, Deserialize, Debug)]
 pub struct Properties {
     pub expression_data_schema: String,

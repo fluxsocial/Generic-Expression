@@ -1,5 +1,5 @@
 import { Orchestrator } from "@holochain/tryorama";
-import { conductorConfig, installation } from "./common";
+import { conductorConfig, installation, sleep } from "./common";
 
 const orchestrator = new Orchestrator();
 
@@ -25,10 +25,29 @@ orchestrator.registerScenario("Create expression", async (s, t) => {
             },
         },
     );
-    console.log("**************")
-    console.log("**************")
+    console.log("Got entry hash: ")
     console.log(entryHash);
     t.ok(entryHash);
+
+    sleep(10000);
+    
+    // Get expression by author
+    var from_date = new Date();
+    var dateOffset = 12 * 60 * 60 * 1000;
+    from_date.setTime(from_date.getTime() - dateOffset); // 12 hours
+
+    const expressions = await alice_common.cells[0].call(
+        "schema_validation",
+        "get_expression_by_author",
+        {
+            author: "did://alice",
+            from: from_date.toISOString(),
+            until: new Date().toISOString()
+        }
+    );
+    console.log("Got expressions: ", expressions);
+    t.equal(expressions.length, 1);
+
 });
 
 orchestrator.run();
