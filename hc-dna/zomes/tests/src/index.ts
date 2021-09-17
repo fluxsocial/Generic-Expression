@@ -15,8 +15,14 @@ orchestrator.registerScenario("Create expression", async (s, t) => {
         "create_expression",
         { 
             data: `{
-                "productId": 11
-            }`
+                "productId": 1
+            }`,
+            author: "did://alice",
+            timestamp: new Date().toISOString(),
+            proof: {
+                signature: "sig",
+                key: "key"
+            },
         },
     );
     console.log("**************")

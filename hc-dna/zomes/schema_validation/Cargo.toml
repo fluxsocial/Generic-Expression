@@ -12,7 +12,8 @@ name = "schema_validation"
 derive_more = "0"
 serde = "1"
 serde_json = "1"
-hdk = "0.0.103"
+hdk = "0.0.104"
 lazy_static = "1"
-# jsonschema = "0.12.1"
 jsonschema-valid = "0.4.0"
+chrono = { version = "0.4", features = ["serde"] }
+hc_time_index = { git = "https://github.com/holochain-open-dev/holochain-time-index", branch = "main" }
