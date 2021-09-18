@@ -6,11 +6,13 @@ mod params;
 mod config;
 mod schema;
 mod constants;
+mod utils;
 
 use entries::*;
 use params::*;
 use config::*;
 use constants::*;
+use utils::*;
 use schema::validate_content;
 
 entry_defs![
@@ -42,7 +44,7 @@ pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
     let ExpressionInput { data, author, timestamp, proof } = input;
 
     let data_json: Value = serde_json::from_str(&data)
-        .map_err(|e| WasmError::Host(e.to_string()))?;
+        .map_err(|e| err(&e.to_string()))?;
     validate_content(&EXPRESSION_DATA_SCHEMA, &data_json)?;
 
     let expression = Expression {
@@ -56,7 +58,7 @@ pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
     let _header_hash = create_entry(&expression)?;
 
     hc_time_index::index_entry(expression.author.clone(), expression.clone(), LinkTag::new(EXPRESSION_TAG_NAME))
-        .map_err(|e| WasmError::Host(e.to_string()))?;
+        .map_err(|e| err(&e.to_string()))?;
     
     Ok(entry_hash)
 }
@@ -65,14 +67,14 @@ pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
 pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Expression>> {
     let links = hc_time_index::get_links_for_time_span(
         input.author, input.from, input.until, Some(LinkTag::new(EXPRESSION_TAG_NAME)), None
-    ).map_err(|e| WasmError::Host(e.to_string()))?;
+    ).map_err(|e| err(&e.to_string()))?;
     debug!("Got links: {:#?}", links);
     links.into_iter()
         .map(|link| {
             let element = get(link.target, GetOptions::default())?
-                .ok_or(WasmError::Host(String::from("Could not get entry after commit.")))?;
+                .ok_or(err("Could not get entry after commit."))?;
             let expression = element.entry().to_app_option()?
-                .ok_or(WasmError::Host(String::from("Could not deserialize element to expression")))?;
+                .ok_or(err("Could not deserialize element to Expression."))?;
             Ok(expression)
         })
         .collect()
@@ -84,7 +86,7 @@ pub fn get_expression_by_address(input: EntryHash) -> ExternResult<Option<Expres
     if let Some(element) = optional_element {
         let expression: Expression = element.entry()
             .to_app_option()?
-            .ok_or(WasmError::Host(String::from("Could not deserialize element into Expression.")))?;
+            .ok_or(err("Could not deserialize element to Expression."))?;
         
         return Ok(Some(expression))
     }
@@ -115,7 +117,7 @@ pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<Pr
     let ExpressionInput { data, author, timestamp, proof } = input.expression;
 
     let data_json: Value = serde_json::from_str(&data)
-        .map_err(|e| WasmError::Host(e.to_string()))?;
+        .map_err(|e| err(&e.to_string()))?;
     validate_content(&EXPRESSION_DATA_SCHEMA, &data_json)?;
 
     let expression = PrivateExpression {
@@ -153,10 +155,10 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
                 .into_iter()
                 .map(|link| {
                     let element = get(link.target, GetOptions::default())?
-                        .ok_or(WasmError::Host(String::from("Could not get entry after commit")))?;
+                        .ok_or(err("Could not get entry after commit."))?;
                     let expression: PrivateExpression = element.entry()
                         .to_app_option()?
-                        .ok_or(WasmError::Host(String::from("Could not deserialize element into PrivateExpression.")))?;
+                        .ok_or(err("Could not deserialize element to PrivateExpression."))?;
 
                     Ok(expression)
                 })
@@ -176,7 +178,7 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
                 .map(|elem| {
                     let expression: PrivateExpression = elem.entry()
                         .to_app_option()?
-                        .ok_or(WasmError::Host(String::from("Could not deserialize element into PrivateExpression.")))?;
+                        .ok_or(err("Could not deserialize element to PrivateExpression."))?;
                     
                     Ok(expression)
                 })
