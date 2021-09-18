@@ -11,3 +11,4 @@ node_modules
 !*.icons.js
 !*.config.js
 build
+release/*
