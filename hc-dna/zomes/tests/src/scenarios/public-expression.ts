@@ -27,6 +27,28 @@ module.exports = (orchestrator) => {
         console.log("Got entry hash: ")
         console.log(entryHash);
         t.ok(entryHash);
+
+        // Create an invalid expression
+        try {
+            await alice_common.cells[0].call(
+                "generic_expression",
+                "create_expression",
+                { 
+                    data: `{
+                        "productId": "1"
+                    }`,
+                    author: "did://alice",
+                    timestamp: new Date().toISOString(),
+                    proof: {
+                        signature: "sig",
+                        key: "key"
+                    },
+                },
+            );
+        } catch(err) {
+            console.log("Got expected error: ", err);
+            t.ok(err);
+        }
     
         sleep(10000);
         

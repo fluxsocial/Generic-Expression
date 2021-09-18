@@ -33,6 +33,31 @@ module.exports = (orchestrator) => {
         console.log("Sent private experssion: ", privateExpression);
         t.ok(privateExpression);
 
+        // Send invalid private expression from alice to bob
+        try {
+            await alice_happ.cells[0].call(
+                "generic_expression",
+                "send_private_expression",
+                {
+                    to: bob_happ.agent,
+                    expression: { 
+                        data: `{
+                            "productId": "id"
+                        }`,
+                        author: "did://alice",
+                        timestamp: new Date().toISOString(),
+                        proof: {
+                            signature: "sig",
+                            key: "key"
+                        },
+                    }
+                },
+            );
+        } catch(err) {
+            console.log("Got expected error: ", err);
+            t.ok(err);
+        }
+
         // Get private expressions
         const expressionsFromAll = await bob_happ.cells[0].call(
             "generic_expression",

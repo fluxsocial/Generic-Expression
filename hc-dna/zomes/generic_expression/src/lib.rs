@@ -1,18 +1,17 @@
 use hdk::prelude::*;
-use lazy_static::lazy_static;
-use jsonschema_valid::{schemas, Config};
 use serde_json::Value;
 
 mod entries;
 mod params;
+mod config;
+mod schema;
+mod constants;
 
 use entries::*;
 use params::*;
-
-// TODOs
-// - schema json validate entry
-//   - field not too big, max length
-// - remove assert
+use config::*;
+use constants::*;
+use schema::validate_content;
 
 entry_defs![
     Expression::entry_def(),
@@ -26,7 +25,7 @@ entry_defs![
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let mut functions: GrantedFunctions = BTreeSet::new();
-    functions.insert((zome_info()?.zome_name, "recv_private_expression".into()));
+    functions.insert((zome_info()?.zome_name, RECV_PRIVATE_EXPRESSION_FUNC_NAME.into()));
     
     create_cap_grant(CapGrantEntry {
         tag: "".into(),
@@ -42,15 +41,9 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
 pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
     let ExpressionInput { data, author, timestamp, proof } = input;
 
-    let schema: Value = serde_json::from_str(&EXPRESSION_SCHEMA)
-        .map_err(|e| WasmError::Host(e.to_string()))?;
-    let cfg = Config::from_schema(&schema, Some(schemas::Draft::Draft7))
-        .map_err(|e| WasmError::Host(e.to_string()))?;
-    assert!(cfg.validate_schema().is_ok());
-    
     let data_json: Value = serde_json::from_str(&data)
         .map_err(|e| WasmError::Host(e.to_string()))?;
-    assert!(cfg.validate(&data_json).is_ok());
+    validate_content(&EXPRESSION_DATA_SCHEMA, &data_json)?;
 
     let expression = Expression {
         data: data_json,
@@ -62,7 +55,7 @@ pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
     let entry_hash = hash_entry(&expression)?;
     let _header_hash = create_entry(&expression)?;
 
-    hc_time_index::index_entry(expression.author.clone(), expression.clone(), LinkTag::new("expression"))
+    hc_time_index::index_entry(expression.author.clone(), expression.clone(), LinkTag::new(EXPRESSION_TAG_NAME))
         .map_err(|e| WasmError::Host(e.to_string()))?;
     
     Ok(entry_hash)
@@ -71,7 +64,7 @@ pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
 #[hdk_extern]
 pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Expression>> {
     let links = hc_time_index::get_links_for_time_span(
-        input.author, input.from, input.until, Some(LinkTag::new("expression")), None
+        input.author, input.from, input.until, Some(LinkTag::new(EXPRESSION_TAG_NAME)), None
     ).map_err(|e| WasmError::Host(e.to_string()))?;
     debug!("Got links: {:#?}", links);
     links.into_iter()
@@ -111,7 +104,7 @@ pub fn recv_private_expression(input: PrivateExpression) -> ExternResult<EntryHa
     create_link(
         agent_entry_hash,
         expression_entry_hash.clone(),
-        LinkTag::new("expression"),
+        LinkTag::new(EXPRESSION_TAG_NAME),
     )?;
 
     Ok(expression_entry_hash)
@@ -121,15 +114,9 @@ pub fn recv_private_expression(input: PrivateExpression) -> ExternResult<EntryHa
 pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<PrivateExpression> {
     let ExpressionInput { data, author, timestamp, proof } = input.expression;
 
-    let schema: Value = serde_json::from_str(&EXPRESSION_SCHEMA)
-        .map_err(|e| WasmError::Host(e.to_string()))?;
-    let cfg = Config::from_schema(&schema, Some(schemas::Draft::Draft7))
-        .map_err(|e| WasmError::Host(e.to_string()))?;
-    assert!(cfg.validate_schema().is_ok());
-    
     let data_json: Value = serde_json::from_str(&data)
         .map_err(|e| WasmError::Host(e.to_string()))?;
-    assert!(cfg.validate(&data_json).is_ok());
+    validate_content(&EXPRESSION_DATA_SCHEMA, &data_json)?;
 
     let expression = PrivateExpression {
         data: data_json,
@@ -141,11 +128,11 @@ pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<Pr
     // Call the user's remote zome
     // TODO here we want some pattern better than this; only having this succeed when agent is online is not great
     // Here I am sending the identity of the callee of this fn since I dont know if we can get this information in recv_private_expression?
-    // Id imagine there is some way but for now this can work fine...
+    // I'd imagine there is some way but for now this can work fine...
     call_remote(
         input.to,
-        ZomeName::from("generic_expression"),
-        FunctionName::from("recv_private_expression"),
+        ZomeName::from(ZOME_NAME),
+        FunctionName::from(RECV_PRIVATE_EXPRESSION_FUNC_NAME),
         None,
         &expression,
     )?;
@@ -159,7 +146,7 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
         Some(ident) => {
             let links = get_links(
                 hash_entry(&PrivateAcaiAgent(ident.clone()))?,
-                Some(LinkTag::new("expression")),
+                Some(LinkTag::new(EXPRESSION_TAG_NAME)),
             )?;
 
             let experssions = links.into_inner()
@@ -181,7 +168,7 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
             let exp_entry_def = PrivateExpression::entry_def();
             let elements = query(
                 QueryFilter::new().entry_type(EntryType::App(
-                    AppEntryType::new(1.into(), 0.into(), exp_entry_def.visibility)
+                    AppEntryType::new(PRIVATE_EXPRESSION_ENTRY_DEF_INDEX.into(), ZOME_INDEX.into(), exp_entry_def.visibility)
                 )).include_entries(true)
             )?;
 
@@ -198,20 +185,4 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
             Ok(expressions)
         }
     }
-}
-
-#[derive(SerializedBytes, Serialize, Deserialize, Debug)]
-pub struct Properties {
-    pub expression_data_schema: String,
-}
-
-lazy_static! {
-    pub static ref EXPRESSION_SCHEMA: String = {
-        let host_dna_config = zome_info()
-            .expect("Could not get zome configuration.")
-            .properties;
-        let properties = Properties::try_from(host_dna_config)
-            .expect("Could not convert zome dna properties to Properties.");
-        properties.expression_data_schema
-    };
 }
