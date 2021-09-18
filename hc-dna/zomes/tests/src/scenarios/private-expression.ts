@@ -13,7 +13,7 @@ module.exports = (orchestrator) => {
 
         // Send private expression from alice to bob
         const privateExpression = await alice_happ.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "send_private_expression",
             {
                 to: bob_happ.agent,
@@ -35,7 +35,7 @@ module.exports = (orchestrator) => {
 
         // Get private expressions
         const expressionsFromAll = await bob_happ.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "inbox",
             {
                 from: null,
@@ -48,7 +48,7 @@ module.exports = (orchestrator) => {
 
         // Get private expressions from alice
         const expressionsFromAlice = await bob_happ.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "inbox",
             {
                 from: "did://alice",
@@ -61,7 +61,7 @@ module.exports = (orchestrator) => {
 
         // Get private expressions from charlie
         const expressionsFromCharlie = await bob_happ.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "inbox",
             {
                 from: "did://charlie",

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "zomes/schema_validation",
+  "zomes/generic_expression",
 ]
 
 [profile.dev]

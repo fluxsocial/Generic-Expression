@@ -258,6 +258,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "generic_expression"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "hc_time_index",
+ "hdk",
+ "jsonschema-valid",
+ "lazy_static",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -862,20 +876,6 @@ name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
-
-[[package]]
-name = "schema_validation"
-version = "0.0.1"
-dependencies = [
- "chrono",
- "derive_more",
- "hc_time_index",
- "hdk",
- "jsonschema-valid",
- "lazy_static",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "scopeguard"

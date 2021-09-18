@@ -1,6 +1,6 @@
 ---
 manifest_version: 1
-name: schema-validation
+name: generic-expression
 uuid: 00000000-0000-0000-0000-000000000000
 properties: {
   "enforce_spam_limit": 20,
@@ -22,5 +22,5 @@ properties: {
   }',
 }
 zomes: 
-  - name: schema_validation
-    bundled: ../target/wasm32-unknown-unknown/release/schema_validation.wasm
+  - name: generic_expression
+    bundled: ../target/wasm32-unknown-unknown/release/generic_expression.wasm

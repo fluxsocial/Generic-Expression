@@ -10,7 +10,7 @@ module.exports = (orchestrator) => {
     
         // Create an expression
         let entryHash = await alice_common.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "create_expression",
             { 
                 data: `{
@@ -36,7 +36,7 @@ module.exports = (orchestrator) => {
         from_date.setTime(from_date.getTime() - dateOffset); // 12 hours ago
     
         const expressions = await alice_common.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "get_expression_by_author",
             {
                 author: "did://alice",
@@ -51,7 +51,7 @@ module.exports = (orchestrator) => {
     
         // Get experssion by its address
         const expression = await alice_common.cells[0].call(
-            "schema_validation",
+            "generic_expression",
             "get_expression_by_address",
             entryHash,
         )

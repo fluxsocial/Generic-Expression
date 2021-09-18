@@ -144,7 +144,7 @@ pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<Pr
     // Id imagine there is some way but for now this can work fine...
     call_remote(
         input.to,
-        ZomeName::from("schema_validation"),
+        ZomeName::from("generic_expression"),
         FunctionName::from("recv_private_expression"),
         None,
         &expression,
