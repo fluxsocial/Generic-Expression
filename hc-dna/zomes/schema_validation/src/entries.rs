@@ -18,6 +18,18 @@ pub struct Expression {
     pub proof: ExpressionProof,
 }
 
+#[hdk_entry(id = "private_expression", visibility = "private")]
+#[derive(Clone)]
+pub struct PrivateExpression {
+    pub data: Value,
+    pub author: String,
+    pub timestamp: DateTime<Utc>,
+    pub proof: ExpressionProof,
+}
+
+#[hdk_entry(id = "private_acai_agent", visibility = "private")]
+pub struct PrivateAcaiAgent(pub String);
+
 impl IndexableEntry for Expression {
     fn entry_time(&self) -> DateTime<Utc> {
         self.timestamp

@@ -2,32 +2,45 @@ use hdk::prelude::*;
 use lazy_static::lazy_static;
 use jsonschema_valid::{schemas, Config};
 use serde_json::Value;
-use chrono::{DateTime, Utc};
 
 mod entries;
+mod params;
 
 use entries::*;
+use params::*;
 
 // TODOs
-// schema json validate entry
-// - field not too big, max length
+// - schema json validate entry
+//   - field not too big, max length
+// - remove assert
 
 entry_defs![
     Expression::entry_def(),
+    PrivateExpression::entry_def(),
+    PrivateAcaiAgent::entry_def(),
     Path::entry_def()
 ];
 
-#[derive(SerializedBytes, Serialize, Deserialize, Clone, Debug)]
-pub struct CreateExpressionInput {
-    pub data: String,
-    pub author: String,
-    pub timestamp: DateTime<Utc>,
-    pub proof: ExpressionProof,
+/// Run function when zome is initialized by agent.
+/// This adds open cap grant for recv_private_expression function
+#[hdk_extern]
+fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    let mut functions: GrantedFunctions = BTreeSet::new();
+    functions.insert((zome_info()?.zome_name, "recv_private_expression".into()));
+    
+    create_cap_grant(CapGrantEntry {
+        tag: "".into(),
+        // Empty access converts to unrestricted
+        access: ().into(),
+        functions,
+    })?;
+
+    Ok(InitCallbackResult::Pass)
 }
 
 #[hdk_extern]
-pub fn create_expression(input: CreateExpressionInput) -> ExternResult<EntryHash> {
-    let CreateExpressionInput { data, author, timestamp, proof } = input;
+pub fn create_expression(input: ExpressionInput) -> ExternResult<EntryHash> {
+    let ExpressionInput { data, author, timestamp, proof } = input;
 
     let schema: Value = serde_json::from_str(&EXPRESSION_SCHEMA)
         .map_err(|e| WasmError::Host(e.to_string()))?;
@@ -55,13 +68,6 @@ pub fn create_expression(input: CreateExpressionInput) -> ExternResult<EntryHash
     Ok(entry_hash)
 }
 
-#[derive(SerializedBytes, Serialize, Deserialize, Clone, Debug)]
-pub struct GetByAuthorInput {
-    pub author: String,
-    pub from: DateTime<Utc>,
-    pub until: DateTime<Utc>,
-}
-
 #[hdk_extern]
 pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Expression>> {
     let links = hc_time_index::get_links_for_time_span(
@@ -73,7 +79,7 @@ pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Exp
             let element = get(link.target, GetOptions::default())?
                 .ok_or(WasmError::Host(String::from("Could not get entry after commit.")))?;
             let expression = element.entry().to_app_option()?
-                .ok_or(WasmError::Host(String::from("Could not deserialize link data to expression")))?;
+                .ok_or(WasmError::Host(String::from("Could not deserialize element to expression")))?;
             Ok(expression)
         })
         .collect()
@@ -91,6 +97,60 @@ pub fn get_expression_by_address(input: EntryHash) -> ExternResult<Option<Expres
     }
 
     Ok(None)
+}
+
+#[hdk_extern]
+pub fn recv_private_expression(input: PrivateExpression) -> ExternResult<EntryHash> {
+    let agent = PrivateAcaiAgent(input.author.clone());
+    let agent_entry_hash = hash_entry(&agent)?;
+    create_entry(&agent)?;
+    
+    let expression_entry_hash = hash_entry(&input)?;
+    create_entry(&input)?;
+
+    create_link(
+        agent_entry_hash,
+        expression_entry_hash.clone(),
+        LinkTag::new("expression"),
+    )?;
+
+    Ok(expression_entry_hash)
+}
+
+#[hdk_extern]
+pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<PrivateExpression> {
+    let ExpressionInput { data, author, timestamp, proof } = input.expression;
+
+    let schema: Value = serde_json::from_str(&EXPRESSION_SCHEMA)
+        .map_err(|e| WasmError::Host(e.to_string()))?;
+    let cfg = Config::from_schema(&schema, Some(schemas::Draft::Draft7))
+        .map_err(|e| WasmError::Host(e.to_string()))?;
+    assert!(cfg.validate_schema().is_ok());
+    
+    let data_json: Value = serde_json::from_str(&data)
+        .map_err(|e| WasmError::Host(e.to_string()))?;
+    assert!(cfg.validate(&data_json).is_ok());
+
+    let expression = PrivateExpression {
+        data: data_json,
+        author,
+        timestamp,
+        proof,
+    };
+
+    // Call the user's remote zome
+    // TODO here we want some pattern better than this; only having this succeed when agent is online is not great
+    // Here I am sending the identity of the callee of this fn since I dont know if we can get this information in recv_private_expression?
+    // Id imagine there is some way but for now this can work fine...
+    call_remote(
+        input.to,
+        ZomeName::from("schema_validation"),
+        FunctionName::from("recv_private_expression"),
+        None,
+        &expression,
+    )?;
+
+    Ok(expression)
 }
 
 #[derive(SerializedBytes, Serialize, Deserialize, Debug)]

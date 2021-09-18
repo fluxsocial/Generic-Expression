@@ -1,7 +1,7 @@
 import { Config, InstallAgentsHapps } from "@holochain/tryorama";
 import path from "path";
 
-export const conductorConfig = Config.gen();
+export const localConductorConfig = Config.gen();
 
 // Construct proper paths for your DNAs
 const schemaValidation = path.join(__dirname, "../../../workdir/schema-validation.dna");
