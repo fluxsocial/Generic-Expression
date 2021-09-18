@@ -153,6 +153,53 @@ pub fn send_private_expression(input: PrivateExpressionInput) -> ExternResult<Pr
     Ok(expression)
 }
 
+#[hdk_extern]
+pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
+    match input.from {
+        Some(ident) => {
+            let links = get_links(
+                hash_entry(&PrivateAcaiAgent(ident.clone()))?,
+                Some(LinkTag::new("expression")),
+            )?;
+
+            let experssions = links.into_inner()
+                .into_iter()
+                .map(|link| {
+                    let element = get(link.target, GetOptions::default())?
+                        .ok_or(WasmError::Host(String::from("Could not get entry after commit")))?;
+                    let expression: PrivateExpression = element.entry()
+                        .to_app_option()?
+                        .ok_or(WasmError::Host(String::from("Could not deserialize element into PrivateExpression.")))?;
+
+                    Ok(expression)
+                })
+                .collect::<Result<Vec<PrivateExpression>, WasmError>>()?;
+
+            Ok(experssions)
+        },
+        None => {
+            let exp_entry_def = PrivateExpression::entry_def();
+            let elements = query(
+                QueryFilter::new().entry_type(EntryType::App(
+                    AppEntryType::new(1.into(), 0.into(), exp_entry_def.visibility)
+                )).include_entries(true)
+            )?;
+
+            let expressions = elements.into_iter()
+                .map(|elem| {
+                    let expression: PrivateExpression = elem.entry()
+                        .to_app_option()?
+                        .ok_or(WasmError::Host(String::from("Could not deserialize element into PrivateExpression.")))?;
+                    
+                    Ok(expression)
+                })
+                .collect::<Result<Vec<PrivateExpression>, WasmError>>()?;
+
+            Ok(expressions)
+        }
+    }
+}
+
 #[derive(SerializedBytes, Serialize, Deserialize, Debug)]
 pub struct Properties {
     pub expression_data_schema: String,

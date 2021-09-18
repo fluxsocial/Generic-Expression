@@ -22,3 +22,10 @@ pub struct PrivateExpressionInput {
     pub to: AgentPubKey,
     pub expression: ExpressionInput,
 }
+
+#[derive(SerializedBytes, Serialize, Deserialize, Clone, Debug)]
+pub struct InboxInput {
+    pub from: Option<String>,
+    pub page_size: usize,
+    pub page_number: usize,
+}

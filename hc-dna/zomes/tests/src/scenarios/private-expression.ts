@@ -11,6 +11,7 @@ module.exports = (orchestrator) => {
 
         await s.shareAllNodes([alice, bob]);
 
+        // Send private expression from alice to bob
         const privateExpression = await alice_happ.cells[0].call(
             "schema_validation",
             "send_private_expression",
@@ -18,7 +19,7 @@ module.exports = (orchestrator) => {
                 to: bob_happ.agent,
                 expression: { 
                     data: `{
-                        "productId": 1
+                        "productId": 3
                     }`,
                     author: "did://alice",
                     timestamp: new Date().toISOString(),
@@ -29,9 +30,46 @@ module.exports = (orchestrator) => {
                 }
             },
         );
-        console.log("Sent private experssion", privateExpression);
+        console.log("Sent private experssion: ", privateExpression);
         t.ok(privateExpression);
-    
+
+        // Get private expressions
+        const expressionsFromAll = await bob_happ.cells[0].call(
+            "schema_validation",
+            "inbox",
+            {
+                from: null,
+                page_size: 10, page_number: 0
+            }
+        );
+        console.log("Got private experssion from all: ", expressionsFromAll);
+        t.equal(expressionsFromAll.length, 1);
+        t.equal(expressionsFromAll[0].data.productId, 3);
+
+        // Get private expressions from alice
+        const expressionsFromAlice = await bob_happ.cells[0].call(
+            "schema_validation",
+            "inbox",
+            {
+                from: "did://alice",
+                page_size: 10, page_number: 0
+            }
+        );
+        console.log("Got private experssion from Alice: ", expressionsFromAlice);
+        t.equal(expressionsFromAlice.length, 1);
+        t.equal(expressionsFromAlice[0].data.productId, 3);
+
+        // Get private expressions from charlie
+        const expressionsFromCharlie = await bob_happ.cells[0].call(
+            "schema_validation",
+            "inbox",
+            {
+                from: "did://charlie",
+                page_size: 10, page_number: 0
+            }
+        );
+        console.log("Got private experssion from Charlie: ", expressionsFromCharlie);
+        t.equal(expressionsFromCharlie.length, 0);
         
     });
 }
