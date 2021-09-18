@@ -79,6 +79,20 @@ pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Exp
         .collect()
 }
 
+#[hdk_extern]
+pub fn get_expression_by_address(input: EntryHash) -> ExternResult<Option<Expression>> {
+    let optional_element = get(input, GetOptions::default())?;
+    if let Some(element) = optional_element {
+        let expression: Expression = element.entry()
+            .to_app_option()?
+            .ok_or(WasmError::Host(String::from("Could not deserialize element into Expression.")))?;
+        
+        return Ok(Some(expression))
+    }
+
+    Ok(None)
+}
+
 #[derive(SerializedBytes, Serialize, Deserialize, Debug)]
 pub struct Properties {
     pub expression_data_schema: String,

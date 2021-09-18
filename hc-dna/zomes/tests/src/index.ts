@@ -10,6 +10,7 @@ orchestrator.registerScenario("Create expression", async (s, t) => {
     // array structure as you created in your installation array.
     const [[alice_common]] = await alice.installAgentsHapps(installation);
 
+    // Create an expression
     let entryHash = await alice_common.cells[0].call(
         "schema_validation",
         "create_expression",
@@ -34,7 +35,7 @@ orchestrator.registerScenario("Create expression", async (s, t) => {
     // Get expression by author
     var from_date = new Date();
     var dateOffset = 12 * 60 * 60 * 1000;
-    from_date.setTime(from_date.getTime() - dateOffset); // 12 hours
+    from_date.setTime(from_date.getTime() - dateOffset); // 12 hours ago
 
     const expressions = await alice_common.cells[0].call(
         "schema_validation",
@@ -45,8 +46,20 @@ orchestrator.registerScenario("Create expression", async (s, t) => {
             until: new Date().toISOString()
         }
     );
-    console.log("Got expressions: ", expressions);
+    console.log("Got expressions by author: ", expressions);
     t.equal(expressions.length, 1);
+    t.equal(expressions[0].data.productId, 1);
+    t.equal(expressions[0].author, "did://alice");
+
+    // Get experssion by its address
+    const expression = await alice_common.cells[0].call(
+        "schema_validation",
+        "get_expression_by_address",
+        entryHash,
+    )
+    console.log("Got expression by address: ", expression);
+    t.equal(expression.data.productId, 1);
+    t.equal(expression.author, "did://alice");
 
 });
 
