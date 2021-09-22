@@ -1,0 +1,19 @@
+[package]
+name = "generic_expression"
+version = "0.0.1"
+authors = ["kaichao <kaichaosuna@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "generic_expression"
+
+[dependencies]
+derive_more = "0"
+serde = "1"
+serde_json = "1"
+hdk = "0.0.104"
+lazy_static = "1"
+jsonschema-valid = "0.4.0"
+chrono = { version = "0.4", features = ["serde"] }
+hc_time_index = { git = "https://github.com/holochain-open-dev/holochain-time-index", branch = "main" }

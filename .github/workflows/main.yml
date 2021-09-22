@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - name: Fetch source code
+      uses: actions/checkout@v2
+    - name: Use Nix
+      uses: cachix/install-nix-action@v12
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Configure Nix substituters
+      run: |
+        set -xe
+        mkdir -p ~/.config/nix/
+        cp ./.github/nix.conf ~/.config/nix/
+    - uses: cachix/cachix-action@v10
+      with:
+        name: perspect3vism
+        # authToken: '${{ secrets.CACHIX_HOLOCHAIN_CI }}'
+    - name: Prepare Nix environment
+      run: nix-shell --command "echo Completed"
+    - name: Run all tests
+      run: nix-shell --run 'make test'

@@ -1,0 +1,26 @@
+---
+manifest_version: 1
+name: generic-expression
+uuid: 00000000-0000-0000-0000-000000000000
+properties: {
+  "enforce_spam_limit": 20,
+  "max_chunk_interval": 100000,
+  "active_agent_duration_ms": 7200,
+  "expression_data_schema": '{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/product.schema.json",
+    "title": "Product",
+    "description": "A product from Acme catalog",
+    "type": "object",
+    "properties": {
+      "productId": {
+        "description": "The unique identifier for a product",
+        "type": "integer"
+      }
+    },
+    "required": [ "productId" ]
+  }',
+}
+zomes: 
+  - name: generic_expression
+    bundled: ../target/wasm32-unknown-unknown/release/generic_expression.wasm
