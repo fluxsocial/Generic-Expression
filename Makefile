@@ -6,15 +6,12 @@
 #
 SHELL		= bash
 
-.PHONY: test test-unit test-dna release
+.PHONY: test test-unit test-dna
 
 test: test-unit test-dna
 
 test-unit:
-		cd hc-dna && (RUST_BACKTRACE=1 cargo test -- --nocapture)
+		RUST_BACKTRACE=1 cargo test -- --nocapture
 
 test-dna:
-		cd hc-dna/zomes/tests &&  ( [ -d node_modules ] || npm install )  && npm run build-test
-
-release:
-		./release.sh
+		cd zomes/tests &&  ( [ -d node_modules ] || npm install )  && npm run build-test

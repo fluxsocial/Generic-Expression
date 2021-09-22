@@ -1,5 +1,5 @@
 dist/
-hc-dna/zomes/tests/node_modules
+zomes/tests/node_modules
 target/
 .hc
 .cargo

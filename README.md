@@ -11,9 +11,3 @@ Run in nix-shll,
 ```shell
 make test
 ```
-
-### Release
-
-```shell
-make release
-```
