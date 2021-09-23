@@ -6,7 +6,7 @@ An ad4m language to store generic experssion with Holochain.
 
 ### Test
 
-Run in nix-shll,
+Run in nix-shell,
 
 ```shell
 make test
