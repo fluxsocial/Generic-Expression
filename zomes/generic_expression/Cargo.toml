@@ -16,4 +16,4 @@ hdk = "0.0.115"
 lazy_static = "1"
 jsonschema-valid = "0.4.0"
 chrono = { version = "0.4", features = ["serde"] }
-hc_time_index = { git = "https://github.com/kaichaosun/holochain-time-index", branch = "bump-hdk" }
+hc_time_index = { git = "https://github.com/holochain-open-dev/holochain-time-index", branch = "main" }
