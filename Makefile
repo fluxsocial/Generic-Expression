@@ -14,4 +14,4 @@ test-unit:
 		RUST_BACKTRACE=1 cargo test -- --nocapture
 
 test-dna:
-		cd zomes/tests &&  ( [ -d node_modules ] || npm install )  && npm run build-test
+		cd zomes/tests &&  npm install  && npm run build-test

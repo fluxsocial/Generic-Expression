@@ -9,7 +9,7 @@ pub struct Properties {
 
 lazy_static! {
     pub static ref PROPERTIES: Properties = {
-        let host_dna_config = zome_info()
+        let host_dna_config = dna_info()
             .expect("Could not get zome configuration.")
             .properties;
         Properties::try_from(host_dna_config)

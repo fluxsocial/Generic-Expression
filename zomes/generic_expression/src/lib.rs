@@ -27,7 +27,7 @@ entry_defs![
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let mut functions: GrantedFunctions = BTreeSet::new();
-    functions.insert((zome_info()?.zome_name, RECV_PRIVATE_EXPRESSION_FUNC_NAME.into()));
+    functions.insert((zome_info()?.name, RECV_PRIVATE_EXPRESSION_FUNC_NAME.into()));
     
     create_cap_grant(CapGrantEntry {
         tag: "".into(),
@@ -151,7 +151,7 @@ pub fn inbox(input: InboxInput) -> ExternResult<Vec<PrivateExpression>> {
                 Some(LinkTag::new(EXPRESSION_TAG_NAME)),
             )?;
 
-            let experssions = links.into_inner()
+            let experssions = links
                 .into_iter()
                 .map(|link| {
                     let element = get(link.target, GetOptions::default())?
