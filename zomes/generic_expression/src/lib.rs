@@ -19,7 +19,7 @@ entry_defs![
     Expression::entry_def(),
     PrivateExpression::entry_def(),
     PrivateAcaiAgent::entry_def(),
-    Path::entry_def()
+    PathEntry::entry_def()
 ];
 
 /// Run function when zome is initialized by agent.
@@ -68,7 +68,7 @@ pub fn get_expression_by_author(input: GetByAuthorInput) -> ExternResult<Vec<Exp
     let links = hc_time_index::get_links_for_time_span(
         input.author, input.from, input.until, Some(LinkTag::new(EXPRESSION_TAG_NAME)), None
     ).map_err(|e| err(&e.to_string()))?;
-    debug!("Got links: {:#?}", links);
+    // debug!("Got links: {:#?}", links);
     links.into_iter()
         .map(|link| {
             let element = get(link.target, GetOptions::default())?
