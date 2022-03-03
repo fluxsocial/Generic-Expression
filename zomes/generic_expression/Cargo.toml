@@ -12,7 +12,7 @@ name = "generic_expression"
 derive_more = "0"
 serde = "1"
 serde_json = "1"
-hdk = "0.0.119"
+hdk = "0.0.123"
 lazy_static = "1"
 jsonschema-valid = "0.4.0"
 chrono = { version = "0.4", features = ["serde"] }
