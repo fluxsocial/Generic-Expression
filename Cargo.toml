@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "zomes/generic_expression",
+  "zomes/generic_expression_integrity"
 ]
 
 [profile.dev]

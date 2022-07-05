@@ -1,5 +1,5 @@
 use hdk::prelude::*;
 
-pub fn err(reason: &str) -> WasmError {
-    WasmError::Host(String::from(reason))
+pub(crate) fn err(reason: &str) -> WasmError {
+    wasm_error!(WasmErrorInner::Host(String::from(reason)))
 }

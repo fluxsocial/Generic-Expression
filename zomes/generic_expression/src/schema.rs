@@ -1,7 +1,7 @@
-use hdk::prelude::*;
-use serde_json::Value;
-use jsonschema_valid::{schemas, Config};
 use crate::utils::err;
+use hdk::prelude::*;
+use jsonschema_valid::{schemas, Config};
+use serde_json::Value;
 
 pub fn validate_content(schema: &Value, content: &Value) -> ExternResult<()> {
     let cfg = Config::from_schema(schema, Some(schemas::Draft::Draft7))

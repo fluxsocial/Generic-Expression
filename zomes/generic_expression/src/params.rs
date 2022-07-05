@@ -1,6 +1,6 @@
-use hdk::prelude::*;
 use chrono::{DateTime, Utc};
-use crate::entries::ExpressionProof;
+use generic_expression_integrity::ExpressionProof;
+use hdk::prelude::*;
 
 #[derive(SerializedBytes, Serialize, Deserialize, Clone, Debug)]
 pub struct ExpressionInput {

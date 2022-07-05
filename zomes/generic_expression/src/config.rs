@@ -15,7 +15,6 @@ lazy_static! {
         Properties::try_from(host_dna_config)
             .expect("Could not convert zome dna properties to Properties.")
     };
-
     pub static ref EXPRESSION_DATA_SCHEMA: Value = {
         serde_json::from_str(&PROPERTIES.expression_data_schema)
             .expect("Could not convert data string to JSON Value.")

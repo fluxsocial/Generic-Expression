@@ -1,0 +1,20 @@
+[package]
+authors = ["josh@junto.foundation"]
+edition = "2018"
+name = "generic_expression_integrity"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "generic_expression_integrity"
+
+[dependencies]
+derive_more = "0"
+serde = "1"
+chrono = { version = "0.4", features=["serde"] }
+serde_json = "1"
+
+holochain_deterministic_integrity = "0.0.11"
+holo_hash = "0.0.29"
+hdk = "0.0.139"
+hc_time_index = { git = "https://github.com/holochain-open-dev/holochain-time-index" }

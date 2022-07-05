@@ -1,5 +1,5 @@
 {
-  holonixPath ?  builtins.fetchTarball { url = "https://github.com/holochain/holonix/archive/52158409f9b76b442e592e8f06632b0e57a6c365.tar.gz"; }
+  holonixPath ?  builtins.fetchTarball { url = "https://github.com/holochain/holonix/archive/c0ba02d2f72940724f6d4769e4eb4e6cc0b27337.tar.gz"; }
 }:
 
 let
