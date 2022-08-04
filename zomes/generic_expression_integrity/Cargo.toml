@@ -14,7 +14,7 @@ serde = "1"
 chrono = { version = "0.4", features=["serde"] }
 serde_json = "1"
 
-holochain_deterministic_integrity = "0.0.11"
-holo_hash = "0.0.29"
-hdk = "0.0.139"
+hdi = "0.0.15"
+holo_hash = "0.0.31"
+hdk = "0.0.143"
 hc_time_index = { git = "https://github.com/holochain-open-dev/holochain-time-index" }

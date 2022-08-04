@@ -24,7 +24,7 @@ impl IndexableEntry for Expression {
         self.timestamp
     }
 
-    fn hash(&self) -> ExternResult<EntryHash> {
+    fn hash(&self) -> ExternResult<hdk::prelude::HoloHash<holo_hash::hash_type::Entry>> {
         hash_entry(self)
     }
 }

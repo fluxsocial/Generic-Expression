@@ -1,5 +1,7 @@
-import { Orchestrator } from "@holochain/tryorama";
+import test from "tape-promise/tape";
+import { testPublicExpression } from "./scenarios/public-expression";
 
-let orchestrator = new Orchestrator();
-require('./scenarios/public-expression')(orchestrator);
-orchestrator.run();
+
+test("unsynced fetch", async (t) => {
+    await testPublicExpression(t)
+})

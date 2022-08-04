@@ -1,20 +1,9 @@
-import { Config, InstallAgentsHapps } from "@holochain/tryorama";
 import path from "path";
+import {Dna} from "@holochain/tryorama";
 
-export const localConductorConfig = Config.gen();
+const dnas: Dna[] = [{ source: {path: path.join("../../workdir/generic-expression.dna")} }];
 
-// Construct proper paths for your DNAs
-const genericExpression = path.join(__dirname, "../../../workdir/generic-expression.dna");
-
-// Create an InstallAgentsHapps array with your DNAs to tell tryorama what
-// to install into the conductor.
-export const installation: InstallAgentsHapps = [
-    // agent 0
-    [
-        // happ 0
-        [genericExpression],
-    ],
-];
-
-export const sleep = (ms) =>
+const sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(() => resolve(null), ms));
+
+export { dnas, sleep };
